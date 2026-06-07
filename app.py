@@ -14,6 +14,11 @@ st.title("🏨 Hotel Booking Cancellation Predictor")
 def load_dataset():
     return pd.read_csv(r'data\processed_hotel_booking.csv')
 df = load_dataset()
+@st.cache_resource
+def load_model():
+    return joblib.load("models/xgb_model.joblib")
+model = load_model()
+sample = df.drop('is_canceled', axis=1).sample(1)
 
 page = st.sidebar.radio("Navigation", ['Overview', "Prediction", "Model Performance"])
 selected_hotel = st.sidebar.selectbox("Hotel", ["All"] + list(df['hotel'].unique()))
@@ -63,10 +68,6 @@ elif page == "Prediction":
 
         submitted = st.form_submit_button("Predict")
 
-        @st.cache_resource
-        def load_model():
-            return joblib.load("models/xgb_model.joblib")
-        model = load_model()
 
         if submitted:
             input_df = pd.DataFrame({
@@ -75,10 +76,23 @@ elif page == "Prediction":
                 "adults":[adults],
                 "children": [children],
                 "deposit_type": [deposit],
-                "market_segment" : [market_segment]
+                "market_segment" : [market_segment],
+                "total_guests": [adults  + children]
             })
             st.table(input_df)
-
+            sample["hotel"] = hotel
+            sample["lead_time"] = lead
+            sample["adults"] = adults
+            sample["children"] = children
+            sample["deposit_type"] = deposit
+            sample["market_segment"] = market_segment
+            sample["total_guests"] = adults + children
+            prob = model.predict_proba(sample)[0, 1]
+            st.metric("Cancellation Probability", f"{prob:.1%}")
+            if prob > 0.5:
+                st.error("High risk of cancellation")
+            else:
+                st.success("Low risk of cancellation")
 elif page == "Model Performance":
     st.header("Model Performance")
 
