@@ -53,6 +53,32 @@ if page == "Overview":
 elif page == "Prediction":
     st.header("Prediction")
 
+    with st.form("Prediction form"):
+        hotel = st.selectbox("Hotel", df['hotel'].unique())
+        lead = st.slider("Lead time", 0, 750, 100)
+        adults = st.number_input("Number of Adults", 1, 10, 2)
+        children = st.number_input("Number of children", 0, 50, 0)
+        deposit = st.selectbox("Deposit type", df['deposit_type'].unique())
+        market_segment = st.selectbox("Market segment", df['market_segment'].unique())
+
+        submitted = st.form_submit_button("Predict")
+
+        @st.cache_resource
+        def load_model():
+            return joblib.load("models/xgb_model.joblib")
+        model = load_model()
+
+        if submitted:
+            input_df = pd.DataFrame({
+                "hotel": [hotel],
+                "lead_time": [lead],
+                "adults":[adults],
+                "children": [children],
+                "deposit_type": [deposit],
+                "market_segment" : [market_segment]
+            })
+            st.table(input_df)
+
 elif page == "Model Performance":
     st.header("Model Performance")
 
