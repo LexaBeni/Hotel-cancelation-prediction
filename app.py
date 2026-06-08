@@ -18,7 +18,7 @@ df = load_dataset()
 def load_model():
     return joblib.load("models/xgb_model.joblib")
 model = load_model()
-sample = df.drop('is_canceled', axis=1).sample(1)
+sample = df.drop("is_canceled", axis=1).iloc[[0]].copy()
 
 page = st.sidebar.radio("Navigation", ['Overview', "Prediction", "Model Performance"])
 selected_hotel = st.sidebar.selectbox("Hotel", ["All"] + list(df['hotel'].unique()))
@@ -29,6 +29,24 @@ else:
     filtered_df = df.copy()
 
 if page == "Overview":
+    st.markdown("""
+        ## Project Overview
+
+        This machine learning project predicts whether a hotel reservation
+        will be cancelled.
+
+        The model was trained on over 119,000 reservations and achieved:
+
+        - ROC-AUC: 95%
+        - Accuracy: 88%
+        - F1-score: 84%
+
+        The application allows users to:
+
+        - Explore the dataset
+        - Predict cancellation probability
+        - Review model performance
+        """)
     st.header("Dataset Overview")
     col1, col2, col3 = st.columns(3)
     with col1:
@@ -65,6 +83,9 @@ elif page == "Prediction":
         children = st.number_input("Number of children", 0, 50, 0)
         deposit = st.selectbox("Deposit type", df['deposit_type'].unique())
         market_segment = st.selectbox("Market segment", df['market_segment'].unique())
+        adr = st.slider("Adr", 0, 5000, 100)
+        is_repeated_guest = st.checkbox("Is repeated guest?")
+        total_of_special_requests = st.number_input("Number of special guests", 0, 10, 0)
 
         submitted = st.form_submit_button("Predict")
 
@@ -77,7 +98,10 @@ elif page == "Prediction":
                 "children": [children],
                 "deposit_type": [deposit],
                 "market_segment" : [market_segment],
-                "total_guests": [adults  + children]
+                "total_guests": [adults  + children],
+                "adr": [adr],
+                "is_repeated_guest": [is_repeated_guest],
+                "total_of_special_requests" : [total_of_special_requests]
             })
             st.table(input_df)
             sample["hotel"] = hotel
@@ -87,12 +111,23 @@ elif page == "Prediction":
             sample["deposit_type"] = deposit
             sample["market_segment"] = market_segment
             sample["total_guests"] = adults + children
+            sample["adr"] = adr
+            if is_repeated_guest:
+                sample["is_repeated_guest"] = 1
+            else:
+                sample["is_repeated_guest"] = 0
+            sample["total_of_special_requests"] = total_of_special_requests
             prob = model.predict_proba(sample)[0, 1]
             st.metric("Cancellation Probability", f"{prob:.1%}")
-            if prob > 0.5:
-                st.error("High risk of cancellation")
+            st.progress(float(prob))
+            if prob < 0.3:
+                st.success("Low cancellation risk")
+
+            elif prob < 0.7:
+                st.warning("Medium cancellation risk")
+
             else:
-                st.success("Low risk of cancellation")
+                st.error("High cancellation risk")
 elif page == "Model Performance":
     st.header("Model Performance")
 
