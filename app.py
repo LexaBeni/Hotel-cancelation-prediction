@@ -96,3 +96,22 @@ elif page == "Prediction":
 elif page == "Model Performance":
     st.header("Model Performance")
 
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric("Accuracy", "88.0%")
+
+    with col2:
+        st.metric("ROC-AUC", "95.1%")
+
+    with col3:
+        st.metric("F1 Score", "84.0%")
+    
+    st.subheader("Confusion Matrix")
+    st.image("images/confusion_matrix.png")
+    st.subheader("Feature Importance")
+    st.image("images/feature_importance.png")
+    st.subheader("SHAP Summary")
+    st.image("images/shap_summary.png")
+
+
