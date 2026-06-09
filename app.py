@@ -12,7 +12,7 @@ st.title("🏨 Hotel Booking Cancellation Predictor")
 
 @st.cache_data
 def load_dataset():
-    return pd.read_csv(r'data\processed_hotel_booking.csv')
+    return pd.read_csv("data/processed_hotel_booking.csv")
 df = load_dataset()
 @st.cache_resource
 def load_model():
