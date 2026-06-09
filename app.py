@@ -100,7 +100,7 @@ elif page == "Prediction":
                 "market_segment" : [market_segment],
                 "total_guests": [adults  + children],
                 "adr": [adr],
-                "is_repeated_guest": [is_repeated_guest],
+                "is_repeated_guest": [int(is_repeated_guest)],
                 "total_of_special_requests" : [total_of_special_requests]
             })
             st.table(input_df)
