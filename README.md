@@ -53,6 +53,8 @@ hotel-booking-project/
 ├── requirements.txt
 └── README.md
 ```
+## Live Demo
+https://hotel-cancelation-prediction-zecfdq4n7hdgkfahqw58nj.streamlit.app/
 
 ## Run Application
 
